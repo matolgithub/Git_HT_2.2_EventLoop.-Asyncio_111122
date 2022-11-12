@@ -1,0 +1,5 @@
+SQLAlchemy~=1.4.39
+asyncio~=3.4.3
+aiohttp~=3.8.1
+fake_useragent~=0.1.14
+fake_headers~=1.0.2
