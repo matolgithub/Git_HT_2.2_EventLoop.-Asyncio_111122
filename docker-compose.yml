@@ -1,0 +1,13 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:15.0
+    ports:
+      - "5431:5432"
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_USER=async_user
+      - POSTGRES_PASSWORD=async_pswd
+      - POSTGRES_DB=async_db
