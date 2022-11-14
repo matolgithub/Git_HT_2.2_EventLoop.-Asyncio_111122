@@ -9,18 +9,18 @@ class SwapiPeople(Base):
     __tablename__ = "SwapiPeople"
 
     id = Column(Integer, primary_key=True)
-    birth_year = Column(String(100))
-    eye_color = Column(String(100))
-    films = Column(String(100))
-    gender = Column(String(100))
-    hair_color = Column(String(100))
-    height = Column(String(100))
-    homeworld = Column(String(100))
-    mass = Column(String(100))
-    name = Column(String(100), nullable=False)
-    skin_color = Column(String(100))
+    birth_year = Column(String(20))
+    eye_color = Column(String(20))
+    films = Column(String(200))
+    gender = Column(String(20))
+    hair_color = Column(String(20))
+    height = Column(String(20))
+    homeworld = Column(String(40))
+    mass = Column(String(20))
+    name = Column(String(80), nullable=False)
+    skin_color = Column(String(40))
     species = Column(String(100))
-    starships = Column(String(100))
+    starships = Column(String(200))
     vehicles = Column(String(100))
 
 
@@ -34,7 +34,7 @@ class DbClass:
     def db_upload(self, data):
         prs_before = len(self.session.query(SwapiPeople).all())
         for item in data:
-            if self.session.query(SwapiPeople).filter_by(name=item.get('name')).first() is not None:
+            if self.session.query(SwapiPeople).filter_by(name=item.get("name")).first() is not None:
                 print(f"{item.get('name')} already exist!")
                 continue
             new_data = SwapiPeople(**item)
