@@ -32,7 +32,7 @@ async def get_persons():
     list_persons = []
     start_time = datetime.datetime.now()
     item = 1
-    while len(dict_persons) < 3:  # change: total_quant_persons !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    while len(dict_persons) < total_quant_persons:
         dict_items = {}
         url_pers = f"{url}/{item}"
         response = await session.get(url=url_pers)

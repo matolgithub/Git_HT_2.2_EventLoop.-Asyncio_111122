@@ -1,31 +1,35 @@
+import requests
 import asyncio
 import datetime
-import asyncpg
 from more_itertools import chunked
 from aiohttp import ClientSession
-from pprint import pprint
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.ext.declarative import declarative_base
 from os import getenv
 from dotenv import load_dotenv
 from sqlalchemy.orm import sessionmaker
-from async_swapi import get_qty_persons
 
 from model import SwapiPeople
 
 load_dotenv()
 
-total_quant_persons = get_qty_persons()
-
-url = "https://swapi.dev/api/people"
+url = "https://swapi.dev/api/people"  # 15.11.22 - damaged!
+reserve_url = "https://www.swapi.tech/api/people"  # another structure and fields, not as swapi.dev
 
 PG_DSN = getenv("PG_DSN")
 
-CHUNK_SIZE = getenv("CHUNK_SIZE")
+CHUNK_SIZE = 10
 
 Base = declarative_base()
 engine = create_async_engine(PG_DSN)
 Session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+
+
+def get_qty_persons():
+    response = requests.get(url=reserve_url)
+    total_quant_persons = response.json()["total_records"]
+
+    return total_quant_persons  # 82
 
 
 async def chunked_async(async_iter, size):
@@ -42,17 +46,22 @@ async def chunked_async(async_iter, size):
 
 
 async def get_person(people_id: int, session: ClientSession):
-    print(f"Begin: {people_id}")
-    async with session.get(f"{url}/{people_id}") as response:
+    print(f"Begin of procedure: {people_id}")
+    dict_person = {}
+    async with session.get(f"{reserve_url}/{people_id}") as response:
         json_person_data = await response.json()
-    print(f"End: {people_id}")
+        for key, value in json_person_data["result"]["properties"].items():
+            if key != "created" and key != "edited":
+                dict_person[key] = value
+    print(f"End of procedure: {people_id} finished.")
 
-    return json_person_data
+    return dict_person
 
 
 async def get_persons():
+    max_range = get_qty_persons() + 1
     async with ClientSession() as session:
-        for chunk in chunked(range(1, total_quant_persons + 1), CHUNK_SIZE):
+        for chunk in chunked(range(1, max_range), CHUNK_SIZE):
             coroutines = [get_person(people_id=item, session=session) for item in chunk]
             results = await asyncio.gather(*coroutines)
             for person_data in results:
