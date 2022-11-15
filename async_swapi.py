@@ -1,14 +1,19 @@
 import requests
 import asyncio
 import datetime
-import more_itertools
-import math
 from aiohttp import ClientSession
 from pprint import pprint
+from sqlalchemy.ext.asyncio import create_async_engine
+from sqlalchemy.ext.declarative import declarative_base
+from os import getenv
+from dotenv import load_dotenv
 
-from model import DbClass
-
+load_dotenv()
 url = "https://swapi.dev/api/people"
+PG_DSN = getenv("PG_DSN")
+Base = declarative_base()
+
+engine = create_async_engine(PG_DSN)
 
 
 # get quantity of SWAPI characters
@@ -19,14 +24,14 @@ def get_qty_persons():
     return total_quant_persons
 
 
-# get async dictionary of persons from API
-async def get_dict_persons():
+# get async dict and list of persons from API
+async def get_persons():
     session = ClientSession()
     total_quant_persons = get_qty_persons()
     dict_persons = {}
+    list_persons = []
     start_time = datetime.datetime.now()
     item = 1
-
     while len(dict_persons) < 3:  # change: total_quant_persons !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         dict_items = {}
         url_pers = f"{url}/{item}"
@@ -55,18 +60,22 @@ async def get_dict_persons():
                     else:
                         dict_items[key] = value
                 dict_persons[int(f"{item}")] = dict_items
+        list_persons.append(dict_items)
         item += 1
 
-    pprint(dict_persons)
+    # pprint(dict_persons)
+    # pprint(list_persons)
     total_time = datetime.datetime.now() - start_time
     print(total_time)
     await session.close()
 
-    return dict_persons
+    return dict_persons, list_persons
 
 
 async def main():
-    print(await get_dict_persons())
+    task_get_api_persons = asyncio.create_task(get_persons())
+    await task_get_api_persons
 
-# with asyncio: 3pers. -2sec, 82pers. - 29sec.
+
+# with asyncio: 3pers. - 1,9sec, 82pers. - 26,4sec.
 asyncio.run(main())
